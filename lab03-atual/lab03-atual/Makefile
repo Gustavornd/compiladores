@@ -8,6 +8,10 @@ GRAM_DIR := src/src-gram$(GRAM)
 GRAM_FILE ?= gramatica-$(GRAM)/gramatica-$(GRAM).site
 TABELA_FILE ?= gramatica-$(GRAM)/tabela_lr1.conf
 
+TOKENS ?= ins/out.tokens
+PARAMS ?= ins/params.params
+SAIDA ?= ins/saida.saida
+
 CORE_SRCS := \
 	src/sol.cpp \
 	src/Arvore.cpp \
@@ -34,7 +38,10 @@ $(BUILD_DIR)/%.o: %.cpp
 	$(CXX) $(CXXFLAGS) -I$(GRAM_DIR) -Isrc -MMD -MP -c $< -o $@
 
 run: $(TARGET)
-	./$(TARGET) $(GRAM_FILE) $(TABELA_FILE)
+	./$(TARGET) $(GRAM_FILE) $(TABELA_FILE) $(PARAMS) < $(TOKENS)
+
+run-salvar: $(TARGET)
+	./$(TARGET) $(GRAM_FILE) $(TABELA_FILE) $(PARAMS) < $(TOKENS) > $(SAIDA)
 
 clean:
 	rm -rf $(BUILD_DIR) $(TARGET)

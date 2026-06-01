@@ -6,3 +6,5 @@ java OcamlParser < amostra-correcao2.ml | tee entrada.txt
 Executar parserLR
 
 ..\parserLR\bin\parserLR.exe < entrada.txt > saida.txt 2>&1
+
+compilar o parserLR na pasta src: g++ *.cpp -o ../bin/parserLR-linux.exe

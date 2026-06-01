@@ -1,0 +1,16 @@
+LET let
+ID soma
+ID a
+ID b
+IGUAL =
+LET let
+ID resultado
+IGUAL =
+ID a
+MAIS +
+ID b
+AST *
+INT 2
+IN in
+ID resultado
+$ $
