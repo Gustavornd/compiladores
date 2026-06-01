@@ -1,0 +1,8 @@
+javacc compiladores-lab1-modificado-lab-2-Gustavo-Rafael-Nunes-Duraes.jj
+javac *.java                                                            
+java OcamlParser < amostra-correcao2.ml | tee entrada.txt
+
+
+Executar parserLR
+
+..\parserLR\bin\parserLR.exe < entrada.txt > saida.txt 2>&1

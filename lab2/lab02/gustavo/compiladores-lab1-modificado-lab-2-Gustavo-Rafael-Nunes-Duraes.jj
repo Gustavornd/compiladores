@@ -1,0 +1,339 @@
+options {
+    STATIC = true;
+}
+
+PARSER_BEGIN(OcamlParser)
+
+
+import java.io.FileWriter;
+import java.io.IOException;
+
+public class OcamlParser {
+
+  /** Main entry point. */
+  public static void main(String args[]) throws ParseException, IOException {
+    OcamlParser parser = new OcamlParser(System.in);
+    parser.Input();
+  }
+
+  public static void printToken(String token, String lexema){
+    System.out.println(token + " " + lexema);
+  }
+}
+PARSER_END(OcamlParser)
+
+TOKEN_MGR_DECLS: {
+    static int commentNestingDepth;
+}
+
+
+SKIP:{
+"(*" { commentNestingDepth=1;} : COMMENT
+}
+<COMMENT> SKIP : { "(*" { commentNestingDepth += 1 ; } }
+<COMMENT> SKIP : { "*)" {
+    commentNestingDepth -= 1;
+    SwitchTo( commentNestingDepth==0 ? DEFAULT : COMMENT ) ; } }
+<COMMENT> SKIP:{<~[]>}
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+TOKEN :
+{
+    < INT: <INTEIRO> | <INTEIRO_32_BIT> | <INTEIRO_64_BIT> | <INTEIRO_NATIVE> >
+   | < #INTEIRO: (<NUM_INTEIRO> | <NUM_INTEIRO_HEX> | <NUM_INTEIRO_OCTAL> | <NUM_INTEIRO_BINARIO>)>
+   |< #NUM_INTEIRO_HEX: ("-")?("0x" | "0X")(<DIGITO> | ["A"-"F","a"-"f"])(<DIGITO> | ["A"-"F", "a"-"f"] | "-")* >
+   | < #NUM_INTEIRO_OCTAL: ("-")?("0o" | "0O")(["0"-"7"])(["0"-"7"]| "_")*>
+   | < #NUM_INTEIRO_BINARIO: ("-")?("0b" | "0B")("0" | "1")("0" | "1")* >
+   | < #NUM_INTEIRO: ("-")?(<DIGITO>)(<DIGITO> | "_")* >
+   | < #INTEIRO_32_BIT: <INTEIRO>"l">
+   | < #INTEIRO_64_BIT: <INTEIRO>"L">
+   | < #INTEIRO_NATIVE: <INTEIRO>"n">
+
+                    /*Parte inteira                  Parte decimal                    Parte exponencial*/
+   | < FLOAT: ("-")?(<DIGITO>)(<DIGITO> | "_")*(".")(<DIGITO> | "_")*(("e" | "E")("+" | "-")?(<DIGITO>)(<DIGITO>)*)?
+        | ("-")?("0x" | "0X")(<DIGITO> | ["A"-"F", "a"-"f"])(<DIGITO> | ["A"-"F", "a"-"f"] | "_")*
+        (".")(<DIGITO> | ["A"-"F", "a"-"f"] | "_")(("p" | "P")("+"|"-")?(<DIGITO>)(<DIGITO> | "_")*)?
+        >
+
+   | < #ESCAPE_CHAR: ("\\")(<DIGITO>)(<DIGITO>)(<DIGITO>)
+        | ("\\x")(<DIGITO> | ["A"-"F", "a"-"f"])(<DIGITO> | ["A"-"F", "a"-"f"])
+        | ("\\o")(["0"-"3"])(["0"-"7"])(["0"-"7"])
+        | "\\"("\\" | "\"" | "'" | "n" | "t" | "b" |"r" | " ") >
+   | < CHAR: ("'")(~["'", "\\"] | <ESCAPE_CHAR> )("'")>
+
+   | <#UNICODE_CHAR: "\\u"((<DIGITO> | ["A"-"F"] | ["a"-"f"])+)* >
+
+   | < STRING: "\""(~["\"", "\\"] | <ESCAPE_CHAR> | <UNICODE_CHAR> | "\\")*"\"">
+
+   | <LABEL: "~"(" " | "\\t")*<LOWER_ID>(" " | "\\t")*":">
+   | <OPTLABEL: "?"(" " | "\\t")*<LOWER_ID>(" " | "\\t")*":">
+
+    /*PALAVRAS RESERVADAS*/
+    | <AND: "and" >
+    | <AS: "as" >
+    | <ASSERT: "assert" >
+    | <ASR: "asr" >
+    | <BEGIN: "begin" >
+    | <CONSTRAINT: "constraint" >
+    | <DO: "do" >
+    | <DONE: "done" >
+    | <DOWNTO: "downto" >
+    | <ELSE: "else" >
+    | <EXCEPTION: "exception" >
+    | <EXTERNAL: "external" >
+    | <FALSE: "false" >
+    | <FOR: "for" >
+    | <FUN: "fun" >
+    | <FUNCTOR: "functor" >
+    | <IF: "if" >
+    | <IN: "in" >
+    | <INCLUDE: "include" >
+    | <INHERIT: "inherit" >
+    | <LAND: "land" >
+    | <LAZY: "lazy" >
+    | <LET: "let" >
+    | <LOR: "lor" >
+    | <LSL: "lsl" >
+    | <LXOR: "lxor" >
+    | <MATCH: "match" >
+    | <METHOD: "method" >
+    | <MOD: "mod" >
+    | <MODULE: "module" >
+    | <NEW: "new" >
+    | <NONREC: "nonrec" >
+    | <OBJECT: "object" >
+    | <OF: "of" >
+    | <OPEN: "open" >
+    | <PRIVATE: "private" >
+    | <REC: "rec" >
+    | <SIG: "sig" >
+    | <STRUCT: "struct" >
+    | <THEN: "then" >
+    | <TRUE: "true" >
+    | <TRY: "try" >
+    | <TYPE: "type" >
+    | <VAL: "val" >
+    | <VIRTUAL: "virtual" >
+    | <WHILE: "while" >
+    | <WITH: "with" >
+    | <CLASS: "class" >
+    | <END: "end" >
+    | <FUNCTION: "function" >
+    | <INITIALIZER: "initializer" >
+    | <LSR: "lsr" >
+    | <MUTABLE: "mutable" >
+    | <OR: "or" >
+    | <TO: "to" >
+    | <WHEN: "when" >
+
+
+
+    | <DIFF: "!=">
+    | <HASHTAG: "#">
+    | <EBIT: "&">
+    | <ELOG: "&&">
+    | <ASPA: "'">
+    | <EPAR: "(">
+    | <DPAR: ")">
+    | <AST: "*">
+    | <MAIS: "+">
+    | <VIRGULA: ",">
+    | <MENOS_PONTO: "-.">
+    | <SETAD: "->">
+    | <PONTO: ".">
+    | <PONTOPONTO: "..">
+    | <PONTOTIL: ".~">
+    | <DOISPONTO: ":">
+    | <DOISDOISPONTO: "::">
+    | <DOISPONTOIGUAL: ":=">
+    | <DOISPONTOMAIOR: ":>">
+    | <PONTOVIRGULA: ";">
+    | <MENOR: "<">
+    | <SETAE: "<-">
+    | <IGUAL: "=">
+    | <MAIORCOLD: ">]">
+    | <MAIORCH: ">}">
+    | <INTER: "?">
+    | <ECOL: "[">
+    | <MENORCOL: "[<">
+    | <MAIOR: ">">
+    | <DCOL: "]">
+    | <UNDELINE: "_">
+    | <CRASE: "`">
+    | <ECHAVE: "{">
+    | <ECHAVEMENOR: "{<">
+    | <OUBIT: "|">
+    | <OUCOL: "|]">
+    | <OULOG: "||">
+    | <DCHAVE: "}">
+    | <TIL: "~">
+    | <MENOS: "-">
+    | <DOISPONTOVIRGULA: ";;">
+    | <COLOU: "[|">
+    | <MAIORIGUAL: ">=">
+    | <MENORIGUAL: "<=">
+    | <IGUALIGUAL: "==">
+    | <ASTAST: "**">
+    | <BARRAPONTO: "/.">
+    | <ASTPONTO: "*.">
+    | <TILMENOSPONTO: "~-.">
+    | <MAISPONTO: "+.">
+    | <BARRA: "/">
+    | <TILMENOS: "~-">
+    | <ARROBA: "@">
+    | <CHAPEU: "^">
+
+
+    | <LINENUM_DIRECTIVE: ("#")(" ")+(["0"-"9"])+(" ")+<STRING>>
+
+
+   | < ID: (<LETRA> | "_") ( <LETRA> | <DIGITO> | "_" | "'")* >
+   | <#LETRA: ["a"-"z","A"-"Z"] >
+   | < #DIGITO: ["0"-"9"] >
+   | < #LOWER_ID: (["a"-"z"] | "_")(<LETRA> | <DIGITO> | "'")*>
+   | < #UPPER_ID: (["A"-"Z"] | "_")(<LETRA> | <DIGITO> | "'")* >
+
+    | <#CHAR_OPERADOR_CORE: "$" | "&" | "*" | "+" | "-" | "/" | "=" | ">" | "@" | "^" | "|" >
+    | <#CHAR_OPERADOR: <CHAR_OPERADOR_CORE> | "~" |"?" | "%" |"<" | ":" | "." >
+    | <PREFIX_SYMBOL: "!"(<CHAR_OPERADOR>)* | ("?"|"~")(<CHAR_OPERADOR>)+ >
+    | <INFIX_SYMBOL: (<CHAR_OPERADOR_CORE> | "%" | "<")(<CHAR_OPERADOR>)* | "#"(<CHAR_OPERADOR>)+ >
+}
+
+
+/** Top level production. */
+void Input() :
+{
+      Token t;
+
+}
+{
+  (
+    t = <INT> {printToken("INT", t.image);}
+  | t = <FLOAT> {printToken("FLOAT", t.image);}
+  | t = <CHAR> {printToken("CHAR", t.image);}
+  | t = <STRING> {printToken("STRING", t.image);}
+  | t = <LABEL> {printToken("LABEL", t.image);}
+  | t = <OPTLABEL> {printToken("OPTLABEL", t.image);}
+  | t = <AND> {printToken("AND", t.image);}
+  | t = <AS> {printToken("AS", t.image);}
+  | t = <ASSERT> {printToken("ASSERT", t.image);}
+  | t = <ASR> {printToken("ASR", t.image);}
+  | t = <BEGIN> {printToken("BEGIN", t.image);}
+  | t = <CONSTRAINT> {printToken("CONSTRAINT", t.image);}
+  | t = <DO> {printToken("DO", t.image);}
+  | t = <DONE> {printToken("DONE", t.image);}
+  | t = <DOWNTO> {printToken("DOWNTO", t.image);}
+  | t = <ELSE> {printToken("ELSE", t.image);}
+  | t = <EXCEPTION> {printToken("EXCEPTION", t.image);}
+  | t = <EXTERNAL> {printToken("EXTERNAL", t.image);}
+  | t = <FALSE> {printToken("FALSE", t.image);}
+  | t = <FOR> {printToken("FOR", t.image);}
+  | t = <FUN> {printToken("FUN", t.image);}
+  | t = <FUNCTOR> {printToken("FUNCTOR", t.image);}
+  | t = <IF> {printToken("IF", t.image);}
+  | t = <IN> {printToken("IN", t.image);}
+  | t = <INCLUDE> {printToken("INCLUDE", t.image);}
+  | t = <INHERIT> {printToken("INHERIT", t.image);}
+  | t = <LAND> {printToken("LAND", t.image);}
+  | t = <LAZY> {printToken("LAZY", t.image);}
+  | t = <LET> {printToken("LET", t.image);}
+  | t = <LOR> {printToken("LOR", t.image);}
+  | t = <LSL> {printToken("LSL", t.image);}
+  | t = <LXOR> {printToken("LXOR", t.image);}
+  | t = <MATCH> {printToken("MATCH", t.image);}
+  | t = <METHOD> {printToken("METHOD", t.image);}
+  | t = <MOD> {printToken("MOD", t.image);}
+  | t = <MODULE> {printToken("MODULE", t.image);}
+  | t = <NEW> {printToken("NEW", t.image);}
+  | t = <NONREC> {printToken("NONREC", t.image);}
+  | t = <OBJECT> {printToken("OBJECT", t.image);}
+  | t = <OF> {printToken("OF", t.image);}
+  | t = <OPEN> {printToken("OPEN", t.image);}
+  | t = <PRIVATE> {printToken("PRIVATE", t.image);}
+  | t = <REC> {printToken("REC", t.image);}
+  | t = <SIG> {printToken("SIG", t.image);}
+  | t = <STRUCT> {printToken("STRUCT", t.image);}
+  | t = <THEN> {printToken("THEN", t.image);}
+  | t = <TRUE> {printToken("TRUE", t.image);}
+  | t = <TRY> {printToken("TRY", t.image);}
+  | t = <TYPE> {printToken("TYPE", t.image);}
+  | t = <VAL> {printToken("VAL", t.image);}
+  | t = <VIRTUAL> {printToken("VIRTUAL", t.image);}
+  | t = <WHILE> {printToken("WHILE", t.image);}
+  | t = <WITH> {printToken("WITH", t.image);}
+  | t = <CLASS> {printToken("CLASS", t.image);}
+  | t = <END> {printToken("END", t.image);}
+  | t = <FUNCTION> {printToken("FUNCTION", t.image);}
+  | t = <INITIALIZER> {printToken("INITIALIZER", t.image);}
+  | t = <LSR> {printToken("LSR", t.image);}
+  | t = <MUTABLE> {printToken("MUTABLE", t.image);}
+  | t = <OR> {printToken("OR", t.image);}
+  | t = <TO> {printToken("TO", t.image);}
+  | t = <WHEN> {printToken("WHEN", t.image);}
+  |t =  <DIFF> {printToken("DIFF", t.image);}
+  | t = <HASHTAG> {printToken("HASHTAG", t.image);}
+  | t = <EBIT> {printToken("EBIT", t.image);}
+  | t = <ELOG> {printToken("ELOG", t.image);}
+  | t = <ASPA> {printToken("ASPA", t.image);}
+  | t = <EPAR> {printToken("EPAR", t.image);}
+  | t = <DPAR> {printToken("DPAR", t.image);}
+  | t = <AST> {printToken("AST", t.image);}
+  | t = <MAIS> {printToken("MAIS", t.image);}
+  |t =  <VIRGULA> {printToken("VIRGULA", t.image);}
+  |t =  <MENOS_PONTO> {printToken("MENOSPONTO", t.image);}
+  | t = <SETAD> {printToken("SETAD", t.image);}
+  |t =  <PONTOPONTO> {printToken("PONTOPONTO", t.image);}
+  |t =  <PONTOTIL> {printToken("PONTOTIL", t.image);}
+  |t =  <DOISPONTO> {printToken("DOISPONTO", t.image);}
+  |t =  <DOISDOISPONTO> {printToken("DOISDOISPONTO", t.image);}
+  |t =  <DOISPONTOIGUAL> {printToken("DOISPONTOIGUAL", t.image);}
+  | t = <DOISPONTOMAIOR> {printToken("DOISPONTOMAIOR", t.image);}
+  | t = <PONTOVIRGULA> {printToken("PONTOVIRGULA", t.image);}
+  | t = <MENOR> {printToken("MENOR", t.image);}
+  |t =  <SETAE> {printToken("SETAE", t.image);}
+  | t = <IGUAL> {printToken("IGUAL", t.image);}
+  |t =  <MAIOR> {printToken("MAIOR", t.image);}
+  | t = <MAIORCH> {printToken("MAIORCH", t.image);}
+  | t = <INTER> {printToken("INTER", t.image);}
+  |t =  <ECOL> {printToken("ECOL", t.image);}
+  | t = <MENORCOL> {printToken("MENORCOL", t.image);}
+  |t =  <MAIORCOLD>  {printToken("MAIORCOLD", t.image);}
+  | t = <DCOL> {printToken("DCOL", t.image);}
+  | t = <UNDELINE> {printToken("UNDERLINE", t.image);}
+  | t = <CRASE> {printToken("CRASE", t.image);}
+  | t = <ECHAVE> {printToken("ECHAVE", t.image);}
+  | t = <ECHAVEMENOR> {printToken("ECHAVEMENOR", t.image);}
+  | t = <OUBIT> {printToken("OUBIT", t.image);}
+  | t = <OUCOL> {printToken("OUCOL", t.image);}
+  | t = <OULOG> {printToken("OULOG", t.image);}
+  | t = <DCHAVE>  {printToken("DCHAVE", t.image);}
+  | t = <TIL> {printToken("TIL", t.image);}
+  | t = <MENOS> {printToken("MENOS", t.image);}
+  | t = <DOISPONTOVIRGULA> {printToken("DOISPONTOVIRGULA", t.image);}
+  | t = <COLOU>  {printToken("COLOU", t.image);}
+  | t = <LINENUM_DIRECTIVE>  {printToken("LINENUM_DIRECTIVE", t.image);}
+  | t = <MAIORIGUAL> {printToken("MAIORIGUAL", t.image);}
+  | t = <MENORIGUAL> {printToken("MENORIGUAL", t.image);}
+  | t = <IGUALIGUAL> {printToken("IGUALIGUAL", t.image);}
+  | t = <ASTAST> {printToken("ASTAST", t.image);}
+  | t = <BARRAPONTO> {printToken("BARRAPONTO", t.image);}
+  | t = <ASTPONTO> {printToken("ASTPONTO", t.image);}
+  | t = <TILMENOSPONTO> {printToken("TILMENOSPONTO", t.image);}
+  | t = <MAISPONTO> {printToken("MAISPONTO", t.image);}
+  | t = <BARRA> {printToken("BARRA", t.image);}
+  | t = <TILMENOS> {printToken("TILMENOS", t.image);}
+  | t = <ARROBA> {printToken("ARROBA", t.image);}
+  | t = <CHAPEU> {printToken("CHAPEU", t.image);}
+  | t = <PONTO> {printToken("PONTO", t.image);}
+  | t = <PREFIX_SYMBOL> {printToken("PREFIX_SYMBOL", t.image);}
+  | t = <INFIX_SYMBOL> {printToken("INFIX_SYMBOL", t.image);}
+  | t = <ID> {printToken("ID", t.image);}
+  )+<EOF>
+}
