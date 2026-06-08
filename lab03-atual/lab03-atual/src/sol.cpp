@@ -14,6 +14,7 @@ using namespace std;
 #include "Parser.hpp"
 #include "Funcao.hpp"
 #include "Analisador.hpp"
+#include "ValorLiteral.hpp"
 
 int main(int argc, char * argv[]) {
   // Ajustado para receber o programa (argv[0]) + 3 arquivos, totalizando argc == 4.
@@ -63,23 +64,18 @@ int main(int argc, char * argv[]) {
 
   vector<ValorLiteral> parametros_passados;
 
-  // IMPORTANTE: Aqui você deve implementar a leitura do arq_params
-  // Em seguida, exemplos de parâmetros devem ser passados e descritos em um arquivo de nome X.params.
-  // O loop abaixo, que continha dados chumbados (hardcoded), foi comentado.
-  // Leia 'arq_params' de acordo com a formatação exigida pela sua linguagem.
 
-  /*
   for (int i = 1; i <= 3; ++i) {
     ValorLiteral valor_parametro;
     valor_parametro.tipo = new Tipo(Tipo::INT);
     valor_parametro.valor_int = i*10;
     parametros_passados.push_back(valor_parametro);
   }
-  */
+  
 
   Analisador ana;
   cout << "Retorno calculado:" << endl;
-  cout << ana.calcula_retorno(func, parametros_passados) << endl;
+  cout << ana.calcula_ultimo_valor(func, parametros_passados) << endl;
   
   return 0;
 }
