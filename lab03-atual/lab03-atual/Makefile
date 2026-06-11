@@ -35,7 +35,7 @@ DEPS := $(OBJS:.o=.d)
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) $^ -o $@
+	$(CXX) $(CXXFLAGS) $^ -o $@ -lstdc++
 
 $(BUILD_DIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)
