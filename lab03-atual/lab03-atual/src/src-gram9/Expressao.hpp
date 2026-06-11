@@ -4,6 +4,7 @@
 #include "Variavel.hpp"
 #include <iostream>
 using namespace std;
+
 class Expressao
 {
 public:
@@ -13,7 +14,11 @@ public:
     static Expressao *extrai_expressao(No_arv_parse *no);
     static No_arv_parse *get_tipo_expressao(No_arv_parse *no);
 
-    virtual Valor *calcula_valor(vector<Valor *> &params) { cout << "Não implementado" << endl; }
+    virtual Valor *calcula_valor(vector<Valor *> &params) { 
+        (void)params; // Evita o warning de "unused parameter"
+        cout << "Não implementado" << endl; 
+        return NULL; // Evita o erro de "no return statement"
+    }
 
     virtual void debug()
     {

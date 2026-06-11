@@ -9,8 +9,10 @@ ComandoAtribuicao::ComandoAtribuicao() {
 
 void ComandoAtribuicao::debug_com_tab(int tab) {
   tab3(tab);
-  cerr << "INI ATRIB: " << esquerda->nome << " = " << endl;
-  direita->debug_com_tab(tab+1);
+  cerr << "INI ATRIB: " << (esquerda ? esquerda->nome : "NULL") << " = " << endl;
+  if (direita) {
+      direita->debug();
+  }
   tab3(tab);
   cerr << "FIM ATRIB" << endl;
   cerr << endl;

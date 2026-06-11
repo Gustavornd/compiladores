@@ -1,11 +1,12 @@
-#pragma once
 #define ANALISADOR_HPP
-#include "Comando.hpp"
-#include "Variavel.hpp"
+#include "Funcao.hpp"
 #include "Valor.hpp"
+#include "ValorLiteral.hpp"
 #include <vector>
+
 class Analisador
 {
 public:
-    Valor *calcula_ultimo_valor(Comando *comando, vector<Valor *>& params);
+    // Ajustado para receber o ponteiro de Funcao e o vetor de estruturas literais do arquivo .params
+    double calcula_ultimo_valor(Funcao *func, vector<ValorLiteral>& params);
 };
